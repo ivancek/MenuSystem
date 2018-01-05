@@ -21,11 +21,6 @@ class PUZZLEPLATFORMS_API UMainMenu : public UMenuWidget
 public:
 	virtual bool Initialize() override;
 	
-	
-protected:
-	
-	
-
 private:
 	
 	UPROPERTY(meta = (BindWidget))
