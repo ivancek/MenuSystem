@@ -33,7 +33,20 @@ bool UMainMenu::Initialize()
 		ConfirmButton->OnClicked.AddDynamic(this, &UMainMenu::JoinServer);
 	}
 
+	if (ButtonQuit)
+	{
+		ButtonQuit->OnClicked.AddDynamic(this, &UMainMenu::QuitGame);
+	}
+
 	return true;
+}
+
+void UMainMenu::QuitGame()
+{
+	if (MenuInterface)
+	{
+		MenuInterface->QuitApplication();
+	}
 }
 
 void UMainMenu::HostServer()

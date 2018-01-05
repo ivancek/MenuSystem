@@ -41,6 +41,9 @@ private:
 	UButton* CancelButton;
 	
 	UPROPERTY(meta = (BindWidget))
+	UButton* ButtonQuit;
+
+	UPROPERTY(meta = (BindWidget))
 	UEditableTextBox* IPAddressField;
 	
 	UPROPERTY(meta = (BindWidget))
@@ -51,6 +54,9 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	UWidget* JoinMenu;
+
+	UFUNCTION()
+	void QuitGame();
 
 	UFUNCTION()
 	void HostServer();

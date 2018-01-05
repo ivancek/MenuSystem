@@ -30,11 +30,15 @@ public:
 	UFUNCTION(Exec, BlueprintCallable)
 	virtual void LeaveGame() override;
 
+	UFUNCTION(BlueprintCallable)
+	virtual void QuitApplication() override;
+	
 	UFUNCTION(Exec)
 	void Host() override;
 
 	UFUNCTION(Exec)
 	void Join(const FString& Address) override;
+	
 
 private:
 	TSubclassOf<UUserWidget> MenuClass;

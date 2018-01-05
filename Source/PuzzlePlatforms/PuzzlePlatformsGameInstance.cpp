@@ -28,6 +28,7 @@ void UPuzzlePlatformsGameInstance::Init()
 {
 	UE_LOG(LogTemp, Warning, TEXT("GameInstance Init"));
 	UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *MenuClass->GetName());
+	UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *InMenuClass->GetName());
 }
 
 void UPuzzlePlatformsGameInstance::LoadMenu()
@@ -60,6 +61,16 @@ void UPuzzlePlatformsGameInstance::LeaveGame()
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("Leaving game."));
+}
+
+void UPuzzlePlatformsGameInstance::QuitApplication()
+{
+	if (APlayerController* PlayerController = GetFirstLocalPlayerController())
+	{
+		const FString& Command = "Quit";
+
+		PlayerController->ConsoleCommand(Command);
+	}
 }
 
 void UPuzzlePlatformsGameInstance::Host()
