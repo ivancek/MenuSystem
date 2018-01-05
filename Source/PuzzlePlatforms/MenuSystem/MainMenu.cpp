@@ -3,6 +3,8 @@
 #include "MainMenu.h"
 
 #include "Components/Button.h"
+#include "Components/WidgetSwitcher.h"
+#include "Components/EditableTextBox.h"
 #include "Engine/World.h"
 
 bool UMainMenu::Initialize()
@@ -18,45 +20,20 @@ bool UMainMenu::Initialize()
 
 	if (JoinButton)
 	{
-		JoinButton->OnClicked.AddDynamic(this, &UMainMenu::JoinServer);
+		JoinButton->OnClicked.AddDynamic(this, &UMainMenu::OpenJoinMenu);
+	}
+
+	if (CancelButton)
+	{
+		CancelButton->OnClicked.AddDynamic(this, &UMainMenu::OpenMainMenu);
+	}
+
+	if (ConfirmButton)
+	{
+		ConfirmButton->OnClicked.AddDynamic(this, &UMainMenu::JoinServer);
 	}
 
 	return true;
-}
-
-void UMainMenu::SetMenuInterface(IMenuInterface* Interface)
-{
-	MenuInterface = Interface;
-}
-
-void UMainMenu::Setup()
-{
-	UWorld* World = GetWorld();
-	if (!ensure(World)) { return; }
-
-	this->AddToViewport();
-
-	if (APlayerController* PlayerController = World->GetFirstPlayerController())
-	{
-		FInputModeUIOnly Params;
-		Params.SetWidgetToFocus(this->TakeWidget());
-		Params.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-
-		PlayerController->SetInputMode(Params);
-		PlayerController->bShowMouseCursor = true;
-	}
-}
-
-void UMainMenu::OnLevelRemovedFromWorld(ULevel * InLevel, UWorld * InWorld)
-{
-	this->RemoveFromViewport();
-
-	if (APlayerController* PlayerController = InWorld->GetFirstPlayerController())
-	{
-		FInputModeGameOnly Params;
-		PlayerController->SetInputMode(Params);
-		PlayerController->bShowMouseCursor = false;
-	}
 }
 
 void UMainMenu::HostServer()
@@ -67,11 +44,34 @@ void UMainMenu::HostServer()
 	}
 }
 
+void UMainMenu::OpenJoinMenu()
+{
+	if (MainMenuSwitcher)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Switching to join menu."));
+		MainMenuSwitcher->SetActiveWidget(JoinMenu);
+	}
+}
+
+void UMainMenu::OpenMainMenu()
+{
+	if (MainMenuSwitcher)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Switching to main menu."));
+		MainMenuSwitcher->SetActiveWidget(MainMenu);
+	}
+}
+
 void UMainMenu::JoinServer()
 {
 	if (MenuInterface)
 	{
-		FString Address;
-		MenuInterface->Join(Address);
+		if (IPAddressField)
+		{
+			const FString& Address = IPAddressField->GetText().ToString();
+			MenuInterface->Join(Address);
+			
+			UE_LOG(LogTemp, Warning, TEXT("Joining server IP: %s"), *Address);
+		}
 	}
 }

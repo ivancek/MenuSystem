@@ -7,8 +7,9 @@
 #include "Blueprint/UserWidget.h"
 
 #include "PlatformTrigger.h"
+#include "MenuSystem/MenuWidget.h"
 #include "MenuSystem/MainMenu.h"
-
+#include "MenuSystem/InGameMenu.h"
 
 UPuzzlePlatformsGameInstance::UPuzzlePlatformsGameInstance(const FObjectInitializer & ObjectInitializer)
 {
@@ -16,6 +17,11 @@ UPuzzlePlatformsGameInstance::UPuzzlePlatformsGameInstance(const FObjectInitiali
 	if (!ensure(MenuBP.Class)) return;
 	
 	MenuClass = MenuBP.Class;
+
+	ConstructorHelpers::FClassFinder<UUserWidget> InGameMenuBP(TEXT("/Game/MenuSystem/WBP_InGameMenu"));
+	if (!ensure(InGameMenuBP.Class)) return;
+
+	InMenuClass = InGameMenuBP.Class;
 }
 
 void UPuzzlePlatformsGameInstance::Init()
@@ -28,11 +34,32 @@ void UPuzzlePlatformsGameInstance::LoadMenu()
 {
 	if (!ensure(MenuClass)) return;
 
-	if (UMainMenu* MainMenuWidget = CreateWidget<UMainMenu>(this, MenuClass))
+	if (UMenuWidget* MainMenuWidget = CreateWidget<UMenuWidget>(this, MenuClass))
 	{
 		MainMenuWidget->SetMenuInterface(this);
 		MainMenuWidget->Setup();
 	}
+}
+
+void UPuzzlePlatformsGameInstance::LoadInGameMenu()
+{
+	if (!ensure(InMenuClass)) return;
+
+	if (UMenuWidget* MainMenuWidget = CreateWidget<UMenuWidget>(this, InMenuClass))
+	{
+		MainMenuWidget->SetMenuInterface(this);
+		MainMenuWidget->Setup();
+	}
+}
+
+void UPuzzlePlatformsGameInstance::LeaveGame()
+{
+	if (APlayerController* PlayerController = GetFirstLocalPlayerController())
+	{
+		PlayerController->ClientTravel("/Game/MenuSystem/MainMenu", ETravelType::TRAVEL_Absolute);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Leaving game."));
 }
 
 void UPuzzlePlatformsGameInstance::Host()
@@ -46,7 +73,6 @@ void UPuzzlePlatformsGameInstance::Host()
 	{
 		World->ServerTravel("/Game/ThirdPersonCPP/Maps/ThirdPersonExampleMap?listen");
 	}
-
 }
 
 void UPuzzlePlatformsGameInstance::Join(const FString& Address)
