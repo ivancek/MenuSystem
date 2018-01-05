@@ -63,16 +63,6 @@ void UPuzzlePlatformsGameInstance::LeaveGame()
 	UE_LOG(LogTemp, Warning, TEXT("Leaving game."));
 }
 
-void UPuzzlePlatformsGameInstance::QuitApplication()
-{
-	if (APlayerController* PlayerController = GetFirstLocalPlayerController())
-	{
-		const FString& Command = "Quit";
-
-		PlayerController->ConsoleCommand(Command);
-	}
-}
-
 void UPuzzlePlatformsGameInstance::Host()
 {
 	if (UEngine* Engine = GetEngine())

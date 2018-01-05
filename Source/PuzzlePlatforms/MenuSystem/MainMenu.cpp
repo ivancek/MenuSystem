@@ -35,17 +35,19 @@ bool UMainMenu::Initialize()
 
 	if (ButtonQuit)
 	{
-		ButtonQuit->OnClicked.AddDynamic(this, &UMainMenu::QuitGame);
+		ButtonQuit->OnClicked.AddDynamic(this, &UMainMenu::QuitPressed);
 	}
 
 	return true;
 }
 
-void UMainMenu::QuitGame()
+void UMainMenu::QuitPressed()
 {
-	if (MenuInterface)
+	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
 	{
-		MenuInterface->QuitApplication();
+		const FString& Command = "Quit";
+
+		PlayerController->ConsoleCommand(Command);
 	}
 }
 

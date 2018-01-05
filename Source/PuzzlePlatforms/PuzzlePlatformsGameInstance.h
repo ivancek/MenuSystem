@@ -30,9 +30,6 @@ public:
 	UFUNCTION(Exec, BlueprintCallable)
 	virtual void LeaveGame() override;
 
-	UFUNCTION(BlueprintCallable)
-	virtual void QuitApplication() override;
-	
 	UFUNCTION(Exec)
 	void Host() override;
 

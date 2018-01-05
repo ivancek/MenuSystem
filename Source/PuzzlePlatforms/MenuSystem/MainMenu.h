@@ -56,7 +56,7 @@ private:
 	UWidget* JoinMenu;
 
 	UFUNCTION()
-	void QuitGame();
+	void QuitPressed();
 
 	UFUNCTION()
 	void HostServer();
