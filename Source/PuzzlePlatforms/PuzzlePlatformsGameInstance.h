@@ -5,9 +5,11 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "MenuSystem/MenuInterface.h"
+#include "OnlineSubsystem.h"
 #include "PuzzlePlatformsGameInstance.generated.h"
 
 class UUserWidget;
+
 /**
  * 
  */
@@ -33,6 +35,7 @@ public:
 	UFUNCTION(Exec)
 	void Host() override;
 
+
 	UFUNCTION(Exec)
 	void Join(const FString& Address) override;
 	
@@ -42,4 +45,15 @@ private:
 
 	TSubclassOf<UUserWidget> InMenuClass;
 
+	IOnlineSessionPtr SessionInterface;
+
+	TSharedPtr<class FOnlineSessionSearch> SessionSearch;
+
+	void OnCreateSessionComplete(FName SessionName, bool bWasSuccessful);
+	
+	void OnDestroySessionComplete(FName SessionName, bool bWasSuccessful);
+
+	void OnFindSessionsComplete(bool bWasSuccessful);
+
+	void CreateNewSession();
 };

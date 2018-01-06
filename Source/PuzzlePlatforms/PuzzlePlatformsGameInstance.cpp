@@ -5,13 +5,15 @@
 #include "Engine/Engine.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Blueprint/UserWidget.h"
-#include "OnlineSubsystem.h"
-
+#include "OnlineSessionSettings.h"
+#include "OnlineSessionInterface.h"
 
 #include "PlatformTrigger.h"
 #include "MenuSystem/MenuWidget.h"
 #include "MenuSystem/MainMenu.h"
 #include "MenuSystem/InGameMenu.h"
+
+const static FName SESSION_NAME = TEXT("My Session Game");
 
 UPuzzlePlatformsGameInstance::UPuzzlePlatformsGameInstance(const FObjectInitializer & ObjectInitializer)
 {
@@ -36,12 +38,24 @@ void UPuzzlePlatformsGameInstance::Init()
 	{
 		FString SubsysName = OSubsys->GetSubsystemName().ToString();
 		UE_LOG(LogTemp, Warning, TEXT("Online subsystem name: %s"), *SubsysName);
-		
-		IOnlineSessionPtr SessionInterface = OSubsys->GetSessionInterface();
+
+		SessionInterface = OSubsys->GetSessionInterface();
 
 		if (SessionInterface.IsValid())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Found session interface"));
+			SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnCreateSessionComplete);
+			SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnDestroySessionComplete);
+			SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnFindSessionsComplete);
+
+			SessionSearch = MakeShareable(new FOnlineSessionSearch());
+			if (SessionSearch.IsValid())
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Looking for sessions..."));
+
+				SessionSearch->bIsLanQuery = true;
+				
+				SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
+			}
 		}
 	}
 	else
@@ -84,14 +98,16 @@ void UPuzzlePlatformsGameInstance::LeaveGame()
 
 void UPuzzlePlatformsGameInstance::Host()
 {
-	if (UEngine* Engine = GetEngine())
+	if (SessionInterface.IsValid())
 	{
-		Engine->AddOnScreenDebugMessage(0, 2, FColor::Green, TEXT("Hosting"));
-	}
-
-	if (UWorld* World = GetWorld())
-	{
-		World->ServerTravel("/Game/ThirdPersonCPP/Maps/ThirdPersonExampleMap?listen");
+		if (SessionInterface->GetNamedSession(SESSION_NAME))
+		{
+			SessionInterface->DestroySession(SESSION_NAME, nullptr);
+		}
+		else
+		{
+			CreateNewSession();
+		}
 	}
 }
 
@@ -107,4 +123,63 @@ void UPuzzlePlatformsGameInstance::Join(const FString& Address)
 		PlayerController->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
 	}
 	
+}
+
+void UPuzzlePlatformsGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSuccessful)
+{
+	if (bWasSuccessful)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Session name: %s"), *SessionName.ToString());
+
+		if (UEngine* Engine = GetEngine())
+		{
+			Engine->AddOnScreenDebugMessage(0, 2, FColor::Green, TEXT("Hosting"));
+		}
+
+		if (UWorld* World = GetWorld())
+		{
+			World->ServerTravel("/Game/ThirdPersonCPP/Maps/ThirdPersonExampleMap?listen");
+		}
+	}
+}
+
+void UPuzzlePlatformsGameInstance::OnDestroySessionComplete(FName SessionName, bool bWasSuccessful)
+{
+	if (bWasSuccessful)
+	{
+		CreateNewSession();
+	}
+}
+
+void UPuzzlePlatformsGameInstance::OnFindSessionsComplete(bool bWasSuccessful)
+{
+	if (bWasSuccessful && SessionSearch.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Finished search."));
+		
+		for (const auto& Result : SessionSearch->SearchResults)
+		{
+			if (Result.IsValid())
+			{
+				auto Name = Result.GetSessionIdStr();
+				auto OwnerName = Result.Session.OwningUserName;
+
+				UE_LOG(LogTemp, Warning, TEXT("Found session: %s :: %s"), *OwnerName, *Name);
+			}
+		}
+	}
+}
+
+void UPuzzlePlatformsGameInstance::CreateNewSession()
+{
+	if (SessionInterface.IsValid())
+	{
+		FOnlineSessionSettings SessionSettings;
+		SessionSettings.bIsLANMatch = true;
+		SessionSettings.bShouldAdvertise = true;
+		SessionSettings.NumPublicConnections = 2;
+		
+		
+		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
+	}
 }
