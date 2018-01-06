@@ -2,7 +2,6 @@
 
 #include "MainMenu.h"
 
-#include "Blueprint/UserWidget.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
