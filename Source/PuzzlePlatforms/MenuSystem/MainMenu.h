@@ -9,6 +9,7 @@
 class UButton;
 class UWidgetSwitcher;
 class UEditableTextBox;
+class UScrollBox;
 
 /**
  * 
@@ -19,8 +20,14 @@ class PUZZLEPLATFORMS_API UMainMenu : public UMenuWidget
 	GENERATED_BODY()
 
 public:
+	UMainMenu(const FObjectInitializer& ObjectInitializer);
+
 	virtual bool Initialize() override;
 	
+
+protected:
+	void CreateServerLine();
+
 private:
 	
 	UPROPERTY(meta = (BindWidget))
@@ -39,7 +46,7 @@ private:
 	UButton* ButtonQuit;
 
 	UPROPERTY(meta = (BindWidget))
-	UEditableTextBox* IPAddressField;
+	UScrollBox* ServerListBox;
 	
 	UPROPERTY(meta = (BindWidget))
 	UWidgetSwitcher* MainMenuSwitcher;
@@ -49,6 +56,8 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	UWidget* JoinMenu;
+
+	TSubclassOf<UUserWidget> ServerLineClass;
 
 	UFUNCTION()
 	void QuitPressed();
@@ -64,5 +73,7 @@ private:
 
 	UFUNCTION()
 	void OpenMainMenu();
+
+	
 
 };

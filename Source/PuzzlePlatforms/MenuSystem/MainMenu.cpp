@@ -2,10 +2,24 @@
 
 #include "MainMenu.h"
 
+#include "Blueprint/UserWidget.h"
+#include "UObject/ConstructorHelpers.h"
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/EditableTextBox.h"
+#include "Components/ScrollBox.h"
 #include "Engine/World.h"
+
+#include "ServerLine.h"
+
+UMainMenu::UMainMenu(const FObjectInitializer& ObjectInitializer)
+{
+	ConstructorHelpers::FClassFinder<UUserWidget> ServerLineClassBP(TEXT("/Game/MenuSystem/WBP_ServerLine"));
+	if (ensure(ServerLineClassBP.Class))
+	{
+		ServerLineClass = ServerLineClassBP.Class;
+	}
+}
 
 bool UMainMenu::Initialize()
 {
@@ -39,6 +53,19 @@ bool UMainMenu::Initialize()
 	}
 
 	return true;
+}
+
+void UMainMenu::CreateServerLine()
+{
+	if (!ensure(ServerLineClass)) return;
+
+	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
+	{
+		if (UServerLine* ServerLine = CreateWidget<UServerLine>(PlayerController, ServerLineClass))
+		{
+			ServerListBox->AddChild(ServerLine);
+		}
+	}
 }
 
 void UMainMenu::QuitPressed()
@@ -81,12 +108,14 @@ void UMainMenu::JoinServer()
 {
 	if (MenuInterface)
 	{
-		if (IPAddressField)
+		CreateServerLine();
+
+		/*if (IPAddressField)
 		{
 			const FString& Address = IPAddressField->GetText().ToString();
 			MenuInterface->Join(Address);
 			
 			UE_LOG(LogTemp, Warning, TEXT("Joining server IP: %s"), *Address);
-		}
+		}*/
 	}
 }
