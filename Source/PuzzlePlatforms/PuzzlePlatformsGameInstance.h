@@ -9,6 +9,8 @@
 #include "PuzzlePlatformsGameInstance.generated.h"
 
 class UUserWidget;
+class UMainMenu;
+class UInGameMenu;
 
 /**
  * 
@@ -39,15 +41,20 @@ public:
 	UFUNCTION(Exec)
 	void Join(const FString& Address) override;
 	
+	virtual void FindSessions() override;
 
 private:
 	TSubclassOf<UUserWidget> MenuClass;
 
-	TSubclassOf<UUserWidget> InMenuClass;
+	TSubclassOf<UUserWidget> InGameMenuClass;
 
 	IOnlineSessionPtr SessionInterface;
 
 	TSharedPtr<class FOnlineSessionSearch> SessionSearch;
+
+	UMainMenu* MainMenuWidget;
+	
+	UInGameMenu* InGameMenuWidget;
 
 	void OnCreateSessionComplete(FName SessionName, bool bWasSuccessful);
 	
@@ -56,4 +63,5 @@ private:
 	void OnFindSessionsComplete(bool bWasSuccessful);
 
 	void CreateNewSession();
+
 };

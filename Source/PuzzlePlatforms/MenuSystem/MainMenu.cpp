@@ -7,6 +7,7 @@
 #include "Components/WidgetSwitcher.h"
 #include "Components/EditableTextBox.h"
 #include "Components/ScrollBox.h"
+#include "Components/TextBlock.h"
 #include "Engine/World.h"
 
 #include "ServerLine.h"
@@ -54,15 +55,21 @@ bool UMainMenu::Initialize()
 	return true;
 }
 
-void UMainMenu::CreateServerLine()
+void UMainMenu::CreateServerList(TArray<FString> ServerNames)
 {
 	if (!ensure(ServerLineClass)) return;
 
-	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
+	if (UWorld* World = GetWorld())
 	{
-		if (UServerLine* ServerLine = CreateWidget<UServerLine>(PlayerController, ServerLineClass))
+		ServerListBox->ClearChildren();
+
+		for (auto& ServerName : ServerNames)
 		{
-			ServerListBox->AddChild(ServerLine);
+			if (UServerLine* ServerLine = CreateWidget<UServerLine>(World, ServerLineClass))
+			{
+				ServerLine->ServerName->SetText(FText::FromString(ServerName));
+				ServerListBox->AddChild(ServerLine);
+			}
 		}
 	}
 }
@@ -90,6 +97,8 @@ void UMainMenu::OpenJoinMenu()
 	if (MainMenuSwitcher)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Switching to join menu."));
+		
+		MenuInterface->FindSessions();
 		MainMenuSwitcher->SetActiveWidget(JoinMenu);
 	}
 }
@@ -107,14 +116,6 @@ void UMainMenu::JoinServer()
 {
 	if (MenuInterface)
 	{
-		CreateServerLine();
-
-		/*if (IPAddressField)
-		{
-			const FString& Address = IPAddressField->GetText().ToString();
-			MenuInterface->Join(Address);
-			
-			UE_LOG(LogTemp, Warning, TEXT("Joining server IP: %s"), *Address);
-		}*/
+		MenuInterface->Join("");
 	}
 }

@@ -9,7 +9,6 @@
 #include "OnlineSessionInterface.h"
 
 #include "PlatformTrigger.h"
-#include "MenuSystem/MenuWidget.h"
 #include "MenuSystem/MainMenu.h"
 #include "MenuSystem/InGameMenu.h"
 
@@ -25,14 +24,14 @@ UPuzzlePlatformsGameInstance::UPuzzlePlatformsGameInstance(const FObjectInitiali
 	ConstructorHelpers::FClassFinder<UUserWidget> InGameMenuBP(TEXT("/Game/MenuSystem/WBP_InGameMenu"));
 	if (!ensure(InGameMenuBP.Class)) return;
 
-	InMenuClass = InGameMenuBP.Class;
+	InGameMenuClass = InGameMenuBP.Class;
 }
 
 void UPuzzlePlatformsGameInstance::Init()
 {
 	UE_LOG(LogTemp, Warning, TEXT("GameInstance Init"));
 	UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *MenuClass->GetName());
-	UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *InMenuClass->GetName());
+	UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *InGameMenuClass->GetName());
 
 	if (IOnlineSubsystem* OSubsys = IOnlineSubsystem::Get())
 	{
@@ -46,16 +45,6 @@ void UPuzzlePlatformsGameInstance::Init()
 			SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnCreateSessionComplete);
 			SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnDestroySessionComplete);
 			SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnFindSessionsComplete);
-
-			SessionSearch = MakeShareable(new FOnlineSessionSearch());
-			if (SessionSearch.IsValid())
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Looking for sessions..."));
-
-				SessionSearch->bIsLanQuery = true;
-				
-				SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
-			}
 		}
 	}
 	else
@@ -67,8 +56,9 @@ void UPuzzlePlatformsGameInstance::Init()
 void UPuzzlePlatformsGameInstance::LoadMenuWidget()
 {
 	if (!ensure(MenuClass)) return;
-
-	if (UMenuWidget* MainMenuWidget = CreateWidget<UMenuWidget>(this, MenuClass))
+	
+	MainMenuWidget = CreateWidget<UMainMenu>(this, MenuClass);
+	if (MainMenuWidget)
 	{
 		MainMenuWidget->SetMenuInterface(this);
 		MainMenuWidget->Setup();
@@ -77,12 +67,13 @@ void UPuzzlePlatformsGameInstance::LoadMenuWidget()
 
 void UPuzzlePlatformsGameInstance::LoadInGameMenu()
 {
-	if (!ensure(InMenuClass)) return;
-
-	if (UMenuWidget* MainMenuWidget = CreateWidget<UMenuWidget>(this, InMenuClass))
+	if (!ensure(InGameMenuClass)) return;
+	
+	InGameMenuWidget = CreateWidget<UInGameMenu>(this, InGameMenuClass);
+	if (InGameMenuWidget)
 	{
-		MainMenuWidget->SetMenuInterface(this);
-		MainMenuWidget->Setup();
+		InGameMenuWidget->SetMenuInterface(this);
+		InGameMenuWidget->Setup();
 	}
 }
 
@@ -153,20 +144,21 @@ void UPuzzlePlatformsGameInstance::OnDestroySessionComplete(FName SessionName, b
 
 void UPuzzlePlatformsGameInstance::OnFindSessionsComplete(bool bWasSuccessful)
 {
-	if (bWasSuccessful && SessionSearch.IsValid())
+	if (bWasSuccessful && SessionSearch.IsValid() && MainMenuWidget)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Finished search."));
 		
+		TArray<FString> ServerNames;
 		for (const auto& Result : SessionSearch->SearchResults)
 		{
 			if (Result.IsValid())
 			{
 				auto Name = Result.GetSessionIdStr();
-				auto OwnerName = Result.Session.OwningUserName;
-
-				UE_LOG(LogTemp, Warning, TEXT("Found session: %s :: %s"), *OwnerName, *Name);
+				ServerNames.Add(Name);
 			}
 		}
+
+		MainMenuWidget->CreateServerList(ServerNames);
 	}
 }
 
@@ -179,7 +171,18 @@ void UPuzzlePlatformsGameInstance::CreateNewSession()
 		SessionSettings.bShouldAdvertise = true;
 		SessionSettings.NumPublicConnections = 2;
 		
-		
 		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
+	}
+}
+
+void UPuzzlePlatformsGameInstance::FindSessions()
+{
+	SessionSearch = MakeShareable(new FOnlineSessionSearch());
+	if (SessionSearch.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Looking for sessions..."));
+
+		SessionSearch->bIsLanQuery = true;
+		SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
 	}
 }

@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "ServerLine.generated.h"
 
+class UTextBlock;
 /**
  * 
  */
@@ -15,6 +16,8 @@ class PUZZLEPLATFORMS_API UServerLine : public UUserWidget
 	GENERATED_BODY()
 	
 	
-	
+public:
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* ServerName;
 	
 };

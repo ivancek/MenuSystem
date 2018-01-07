@@ -24,9 +24,9 @@ public:
 
 	virtual bool Initialize() override;
 	
+	void CreateServerList(TArray<FString> ServerNames);
 
 protected:
-	void CreateServerLine();
 
 private:
 	
@@ -73,7 +73,5 @@ private:
 
 	UFUNCTION()
 	void OpenMainMenu();
-
-	
 
 };
