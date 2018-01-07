@@ -26,6 +26,8 @@ public:
 	
 	void CreateServerList(TArray<FString> ServerNames);
 
+	void SelectIndex(uint32 Index);
+
 protected:
 
 private:
@@ -73,5 +75,7 @@ private:
 
 	UFUNCTION()
 	void OpenMainMenu();
+
+	TOptional<uint32> SelectedIndex;
 
 };

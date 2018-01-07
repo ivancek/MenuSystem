@@ -7,6 +7,8 @@
 #include "ServerLine.generated.h"
 
 class UTextBlock;
+class UButton;
+class UMainMenu;
 /**
  * 
  */
@@ -20,4 +22,17 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ServerName;
 	
+	UPROPERTY(meta = (BindWidget))
+	UButton* ServerLineButton;
+	
+	void Setup(class UMainMenu* Parent, uint32 Index);
+
+private:
+	UPROPERTY()
+	UMainMenu* Owner;
+
+	UFUNCTION()
+	void ButtonPressed();
+	
+	uint32 MyIndex;
 };

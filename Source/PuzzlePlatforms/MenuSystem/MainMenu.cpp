@@ -63,15 +63,25 @@ void UMainMenu::CreateServerList(TArray<FString> ServerNames)
 	{
 		ServerListBox->ClearChildren();
 
+		uint32 i = 0;
+
 		for (auto& ServerName : ServerNames)
 		{
 			if (UServerLine* ServerLine = CreateWidget<UServerLine>(World, ServerLineClass))
 			{
 				ServerLine->ServerName->SetText(FText::FromString(ServerName));
+				ServerLine->Setup(this, i);
+				i++;
+				
 				ServerListBox->AddChild(ServerLine);
 			}
 		}
 	}
+}
+
+void UMainMenu::SelectIndex(uint32 Index)
+{
+	SelectedIndex = Index;
 }
 
 void UMainMenu::QuitPressed()
@@ -94,6 +104,8 @@ void UMainMenu::HostServer()
 
 void UMainMenu::OpenJoinMenu()
 {
+	CreateServerList({ "Test1 ", "Test2", "Test3" });
+	
 	if (MainMenuSwitcher)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Switching to join menu."));
@@ -114,8 +126,13 @@ void UMainMenu::OpenMainMenu()
 
 void UMainMenu::JoinServer()
 {
-	if (MenuInterface)
+	if (SelectedIndex.IsSet() && MenuInterface)
 	{
-		MenuInterface->Join("");
+		MenuInterface->Join(SelectedIndex.GetValue());
+		UE_LOG(LogTemp, Warning, TEXT("Selected index: %d"), SelectedIndex.GetValue());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Selected index not set."));
 	}
 }
