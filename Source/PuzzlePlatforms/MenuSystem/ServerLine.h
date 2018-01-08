@@ -23,6 +23,12 @@ public:
 	UTextBlock* ServerName;
 	
 	UPROPERTY(meta = (BindWidget))
+	UTextBlock* HostUsername;
+	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* PlayersNumBox;
+	
+	UPROPERTY(meta = (BindWidget))
 	UButton* ServerLineButton;
 	
 	UPROPERTY(BlueprintReadOnly)

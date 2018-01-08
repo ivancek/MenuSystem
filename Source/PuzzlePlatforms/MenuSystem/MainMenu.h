@@ -11,6 +11,18 @@ class UWidgetSwitcher;
 class UEditableTextBox;
 class UScrollBox;
 
+USTRUCT()
+struct FServerData
+{
+	GENERATED_BODY()
+
+	FString Name;
+	FString HostUsername;
+	uint16 CurrentPlayers;
+	uint16 MaxPlayers;
+
+};
+
 /**
  * 
  */
@@ -24,7 +36,7 @@ public:
 
 	virtual bool Initialize() override;
 	
-	void CreateServerList(TArray<FString> ServerNames);
+	void CreateServerList(TArray<FServerData> ServerNames);
 
 	void SelectIndex(uint32 Index);
 

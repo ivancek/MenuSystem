@@ -55,7 +55,7 @@ bool UMainMenu::Initialize()
 	return true;
 }
 
-void UMainMenu::CreateServerList(TArray<FString> ServerNames)
+void UMainMenu::CreateServerList(TArray<FServerData> ServerNames)
 {
 	if (!ensure(ServerLineClass)) return;
 
@@ -65,11 +65,18 @@ void UMainMenu::CreateServerList(TArray<FString> ServerNames)
 
 		uint32 i = 0;
 
-		for (auto& ServerName : ServerNames)
+		for (const auto& ServerData : ServerNames)
 		{
 			if (UServerLine* ServerLine = CreateWidget<UServerLine>(World, ServerLineClass))
 			{
-				ServerLine->ServerName->SetText(FText::FromString(ServerName));
+				FText ServerName = FText::FromString(FString::Printf(TEXT("%s"), *ServerData.Name));
+				FText HostUsername = FText::FromString(FString::Printf(TEXT("%s"), *ServerData.HostUsername));
+				FText NumConnections = FText::FromString(FString::Printf(TEXT("%d / %d"), ServerData.CurrentPlayers, ServerData.MaxPlayers));
+				
+				ServerLine->ServerName->SetText(ServerName);
+				ServerLine->HostUsername->SetText(HostUsername);
+				ServerLine->PlayersNumBox->SetText(NumConnections);
+				
 				ServerLine->Setup(this, i);
 				i++;
 				
@@ -119,7 +126,7 @@ void UMainMenu::HostServer()
 
 void UMainMenu::OpenJoinMenu()
 {
-	CreateServerList({ "Test1 ", "Test2", "Test3" });
+	//CreateServerList({ "Test1 ", "Test2", "Test3" });
 	
 	if (MainMenuSwitcher)
 	{
