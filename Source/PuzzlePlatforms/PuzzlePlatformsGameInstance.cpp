@@ -190,10 +190,11 @@ void UPuzzlePlatformsGameInstance::CreateNewSession()
 	if (SessionInterface.IsValid())
 	{
 		FOnlineSessionSettings SessionSettings;
-		SessionSettings.bIsLANMatch = true;
+		SessionSettings.bIsLANMatch = false;
 		SessionSettings.bShouldAdvertise = true;
 		SessionSettings.NumPublicConnections = 2;
-		
+		SessionSettings.bUsesPresence = true;
+
 		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
 	}
 }
@@ -205,7 +206,9 @@ void UPuzzlePlatformsGameInstance::FindSessions()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Looking for sessions..."));
 
+		SessionSearch->MaxSearchResults = 100;
 		SessionSearch->bIsLanQuery = true;
+		SessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
 		SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
 	}
 }

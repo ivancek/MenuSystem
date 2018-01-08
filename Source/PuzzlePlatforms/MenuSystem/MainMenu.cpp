@@ -82,6 +82,21 @@ void UMainMenu::CreateServerList(TArray<FString> ServerNames)
 void UMainMenu::SelectIndex(uint32 Index)
 {
 	SelectedIndex = Index;
+
+	UpdateChildren();
+}
+
+void UMainMenu::UpdateChildren()
+{
+	for (int32 i = 0; i < ServerListBox->GetChildrenCount(); i++)
+	{
+		auto Child = Cast<UServerLine>(ServerListBox->GetChildAt(i));
+		
+		if (Child) // Check whether the child is null. It could be of other type, so cast can fail.
+		{
+			Child->bSelected = SelectedIndex.IsSet() && SelectedIndex .GetValue() == i;
+		}
+	}
 }
 
 void UMainMenu::QuitPressed()

@@ -25,6 +25,9 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UButton* ServerLineButton;
 	
+	UPROPERTY(BlueprintReadOnly)
+	bool bSelected = false;
+	
 	void Setup(class UMainMenu* Parent, uint32 Index);
 
 private:
